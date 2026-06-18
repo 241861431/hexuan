@@ -1,11 +1,11 @@
 local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/whenheet/dasimaui/refs/heads/main/%E4%BB%98%E8%B4%B9%E7%89%88ui(2).lua"))()
 
 local Window = WindUI:CreateWindow({
-    Title = "大司马付费版<font color='#00FF00'>V2</font>",
+    Title = "91vs78脚本<font color='#00FF00'>V2</font>",
     Icon = "rbxassetid://4483362748",
     IconTransparency = 0.5,
     IconThemed = true,
-    Author = "作者:大司马",
+    Author = "作者:是鹤不是轩",
     Folder = "CloudHub",
     Size = UDim2.fromOffset(420, 400),
     Transparent = true,
@@ -21,7 +21,7 @@ local Window = WindUI:CreateWindow({
 })
 
 Window:EditOpenButton({
-    Title = "大司马脚本",
+    Title = "91vs78脚本",
     Icon = "monitor",
     CornerRadius = UDim.new(0, 16),
     StrokeThickness = 4,
@@ -37,8 +37,8 @@ Window:EditOpenButton({
     Draggable = true,
 })
 
-Window:Tag({ Title = "V2大司马脚本", Color = Color3.fromHex("#30ff6a") })
-Window:Tag({ Title = "大司马", Color = Color3.fromHex("#315dff") })
+Window:Tag({ Title = "91vs78脚本bate", Color = Color3.fromHex("#30ff6a") })
+Window:Tag({ Title = "91vs78", Color = Color3.fromHex("#315dff") })
 
 local Tabs = {
     Main = Window:Section({ Title = "坐标管理", Opened = true }),
