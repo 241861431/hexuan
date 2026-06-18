@@ -1,0 +1,151 @@
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/whenheet/dasimaui/refs/heads/main/%E4%BB%98%E8%B4%B9%E7%89%88ui(2).lua"))()
+
+local Window = WindUI:CreateWindow({
+    Title = "大司马付费版<font color='#00FF00'>V2</font>",
+    Icon = "rbxassetid://4483362748",
+    IconTransparency = 0.5,
+    IconThemed = true,
+    Author = "作者:大司马",
+    Folder = "CloudHub",
+    Size = UDim2.fromOffset(420, 400),
+    Transparent = true,
+    Theme = "Light",
+    User = {
+        Enabled = true,
+        Callback = function() print("clicked") end,
+        Anonymous = false
+    },
+    SideBarWidth = 200,
+    ScrollBarEnabled = true,
+    Background = "rbxassetid://111122821357551"
+})
+
+Window:EditOpenButton({
+    Title = "大司马脚本",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 16),
+    StrokeThickness = 4,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromHex("FF0000")),
+        ColorSequenceKeypoint.new(0.16, Color3.fromHex("FF7F00")),
+        ColorSequenceKeypoint.new(0.33, Color3.fromHex("FFFF00")),
+        ColorSequenceKeypoint.new(0.5, Color3.fromHex("00FF00")),
+        ColorSequenceKeypoint.new(0.66, Color3.fromHex("0000FF")),
+        ColorSequenceKeypoint.new(0.83, Color3.fromHex("4B0082")),
+        ColorSequenceKeypoint.new(1, Color3.fromHex("9400D3"))
+    }),
+    Draggable = true,
+})
+
+Window:Tag({ Title = "V2大司马脚本", Color = Color3.fromHex("#30ff6a") })
+Window:Tag({ Title = "大司马", Color = Color3.fromHex("#315dff") })
+
+local Tabs = {
+    Main = Window:Section({ Title = "坐标管理", Opened = true }),
+}
+
+local TabHandles = {
+    Q = Tabs.Main:Tab({ Title = "保存与传送", Icon = "map-pin" }),
+}
+
+local tabFrame = TabHandles.Q
+
+local container = Instance.new("Frame")
+container.Size = UDim2.new(1, 0, 1, 0)
+container.BackgroundTransparency = 1
+container.Parent = tabFrame
+
+local player = game.Players.LocalPlayer
+
+local coordLabel = Instance.new("TextLabel")
+coordLabel.Size = UDim2.new(1, -20, 0, 28)
+coordLabel.Position = UDim2.new(0, 10, 0, 6)
+coordLabel.BackgroundTransparency = 1
+coordLabel.Text = "当前坐标: (0, 0, 0)"
+coordLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+coordLabel.TextXAlignment = Enum.TextXAlignment.Left
+coordLabel.Font = Enum.Font.Gotham
+coordLabel.TextSize = 14
+coordLabel.Parent = container
+
+game:GetService("RunService").Heartbeat:Connect(function()
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local pos = char.HumanoidRootPart.Position
+        coordLabel.Text = string.format("当前坐标: (%.2f, %.2f, %.2f)", pos.X, pos.Y, pos.Z)
+    else
+        coordLabel.Text = "当前坐标: (无角色)"
+    end
+end)
+
+local saveFrame = Instance.new("Frame")
+saveFrame.Size = UDim2.new(1, -20, 0, 36)
+saveFrame.Position = UDim2.new(0, 10, 0, 38)
+saveFrame.BackgroundTransparency = 1
+saveFrame.Parent = container
+
+local nameBox = Instance.new("TextBox")
+nameBox.Size = UDim2.new(0.6, -10, 1, 0)
+nameBox.Position = UDim2.new(0, 0, 0, 0)
+nameBox.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+nameBox.TextColor3 = Color3.new(1,1,1)
+nameBox.BorderSizePixel = 0
+nameBox.PlaceholderText = "坐标名称"
+nameBox.Font = Enum.Font.Gotham
+nameBox.TextSize = 14
+nameBox.Parent = saveFrame
+
+local saveBtn = Instance.new("TextButton")
+saveBtn.Size = UDim2.new(0.35, -10, 1, 0)
+saveBtn.Position = UDim2.new(0.65, 10, 0, 0)
+saveBtn.Text = "💾 保存"
+saveBtn.TextColor3 = Color3.new(1,1,1)
+saveBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
+saveBtn.BorderSizePixel = 0
+saveBtn.Font = Enum.Font.GothamBold
+saveBtn.TextSize = 16
+saveBtn.Parent = saveFrame
+
+local listFrame = Instance.new("Frame")
+listFrame.Size = UDim2.new(1, -20, 0, 0.65)
+listFrame.Position = UDim2.new(0, 10, 0, 82)
+listFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+listFrame.BorderSizePixel = 0
+listFrame.Parent = container
+
+local listCorner = Instance.new("UICorner")
+listCorner.CornerRadius = UDim.new(0, 6)
+listCorner.Parent = listFrame
+
+local listScroller = Instance.new("ScrollingFrame")
+listScroller.Size = UDim2.new(1, 0, 1, 0)
+listScroller.BackgroundTransparency = 1
+listScroller.CanvasSize = UDim2.new(0, 0, 0, 0)
+listScroller.ScrollBarThickness = 5
+listScroller.Parent = listFrame
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Padding = UDim.new(0, 5)
+listLayout.Parent = listScroller
+
+local savedPoints = {}
+
+local function refreshList()
+    for _, child in ipairs(listScroller:GetChildren()) do
+        if child:IsA("Frame") then child:Destroy() end
+    end
+    for i, data in ipairs(savedPoints) do
+        local entry = Instance.new("Frame")
+        entry.Size = UDim2.new(1, 0, 0, 36)
+        entry.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
+        entry.BorderSizePixel = 0
+        entry.Parent = listScroller
+
+        local entryCorner = Instance.new("UICorner")
+        entryCorner.CornerRadius = UDim.new(0, 4)
+        entryCorner.Parent = entry
+
+        local nameLabel = Instance.new("TextLabel")
+        nameLabel.Size = UDim2.new(0.35, 0, 1, 0)
+       
