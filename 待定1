@@ -1,0 +1,139 @@
+-- 精简版坐标传送系统（可开关/隐藏/拖拽）
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local rootPart = character:WaitForChild("HumanoidRootPart")
+local UserInputService = game:GetService("UserInputService")
+
+local waypoints = {
+    {name = "坐标点1", position = Vector3.new(-49.5, 3.6, -82.7)},
+    {name = "坐标点2", position = Vector3.new(0, 0, 0)},
+    {name = "坐标点3", position = Vector3.new(0, 0, 0)},
+}
+
+-- 传送函数
+local function teleportToWaypoint(waypoint)
+    if character and rootPart then
+        rootPart.CFrame = CFrame.new(waypoint.position)
+        print("已传送到: " .. waypoint.name)
+    end
+end
+
+-- 保存当前坐标
+local function saveCurrentPosition(waypointIndex)
+    if character and rootPart then
+        local currentPos = rootPart.Position
+        waypoints[waypointIndex].position = currentPos
+        print(waypoints[waypointIndex].name .. " 已更新坐标: " .. tostring(currentPos))
+        updateGUI()
+    end
+end
+
+-- 创建GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "WaypointGUI"
+screenGui.Parent = player.PlayerGui
+
+-- 开关按钮（可拖拽）
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0, 60, 0, 30)
+toggleButton.Position = UDim2.new(0, 10, 0, 10)
+toggleButton.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
+toggleButton.Text = "打开"
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Font = Enum.Font.SourceSansBold
+toggleButton.TextSize = 14
+toggleButton.Parent = screenGui
+
+-- 主框架
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 30 + (#waypoints * 45))
+mainFrame.Position = UDim2.new(0, 10, 0, 50)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BackgroundTransparency = 0.3
+mainFrame.BorderSizePixel = 0
+mainFrame.Visible = false
+mainFrame.Parent = screenGui
+
+-- 标题
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -20, 0, 25)
+titleLabel.Position = UDim2.new(0, 10, 0, 5)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "坐标传送系统 (点击💾保存当前位置)"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 12
+titleLabel.Parent = mainFrame
+
+-- 按钮容器
+local buttonContainer = Instance.new("Frame")
+buttonContainer.Size = UDim2.new(1, -20, 0, #waypoints * 45)
+buttonContainer.Position = UDim2.new(0, 10, 0, 35)
+buttonContainer.BackgroundTransparency = 1
+buttonContainer.Parent = mainFrame
+
+-- 更新GUI
+function updateGUI()
+    for _, child in ipairs(buttonContainer:GetChildren()) do
+        child:Destroy()
+    end
+    
+    mainFrame.Size = UDim2.new(0, 300, 0, 40 + (#waypoints * 45))
+    buttonContainer.Size = UDim2.new(1, -20, 0, #waypoints * 45)
+    
+    for i, waypoint in ipairs(waypoints) do
+        local yPos = (i-1) * 45
+        
+        local label = Instance.new("TextLabel")
+        label.Size = UDim2.new(0, 180, 0, 35)
+        label.Position = UDim2.new(0, 0, 0, yPos)
+        label.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        label.BackgroundTransparency = 0.5
+        label.Text = waypoint.name .. "\n" .. string.format("%.1f, %.1f, %.1f", waypoint.position.X, waypoint.position.Y, waypoint.position.Z)
+        label.TextColor3 = Color3.fromRGB(255, 255, 255)
+        label.Font = Enum.Font.SourceSansBold
+        label.TextSize = 11
+        label.Parent = buttonContainer
+        
+        local saveButton = Instance.new("TextButton")
+        saveButton.Size = UDim2.new(0, 30, 0, 35)
+        saveButton.Position = UDim2.new(0, 185, 0, yPos)
+        saveButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+        saveButton.Text = "💾"
+        saveButton.TextSize = 14
+        saveButton.Parent = buttonContainer
+        saveButton.MouseButton1Click:Connect(function()
+            saveCurrentPosition(i)
+        end)
+        
+        local teleportButton = Instance.new("TextButton")
+        teleportButton.Size = UDim2.new(0, 50, 0, 35)
+        teleportButton.Position = UDim2.new(0, 220, 0, yPos)
+        teleportButton.BackgroundColor3 = Color3.fromRGB(0, 120, 200)
+        teleportButton.Text = "传送"
+        teleportButton.TextSize = 12
+        teleportButton.Parent = buttonContainer
+        teleportButton.MouseButton1Click:Connect(function()
+            teleportToWaypoint(waypoint)
+        end)
+    end
+end
+
+-- ==================== 拖拽系统 ====================
+local function makeDraggable(guiObject)
+    local dragging = false
+    local dragStart = nil
+    local startPos = nil
+    local holdTimer = nil
+    local isHolding = false
+    
+    guiObject.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            isHolding = true
+            holdTimer = task.delay(0.3, function()
+                if isHolding then
+                    dragging = true
+                    dragStart = input.Position
+                    startPos = guiObject.Position
+                    guiObject.BackgroundTransparency = 0.5
+                
