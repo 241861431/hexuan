@@ -1,0 +1,181 @@
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/whenheet/dasimaui/refs/heads/main/%E4%BB%98%E8%B4%B9%E7%89%88ui(2).lua"))()
+
+local Window = WindUI:CreateWindow({
+    Title = "91vs78脚本",
+    Icon = "rbxassetid://4483362748",
+    IconTransparency = 0.5,
+    IconThemed = true,
+    Author = "作者:是鹤不是轩",
+    Folder = "CloudHub",
+    Size = UDim2.fromOffset(400, 300),
+    Transparent = true,
+    Theme = "Light",
+    User = { Enabled = true, Callback = function() print("clicked") end, Anonymous = false },
+    SideBarWidth = 200,
+    ScrollBarEnabled = true,
+    Background = "rbxassetid://111122821357551"
+})
+
+Window:EditOpenButton({
+    Title = "91vs78脚本", Icon = "monitor",
+    CornerRadius = UDim.new(0, 16), StrokeThickness = 4,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromHex("FF0000")),
+        ColorSequenceKeypoint.new(0.16, Color3.fromHex("FF7F00")),
+        ColorSequenceKeypoint.new(0.33, Color3.fromHex("FFFF00")),
+        ColorSequenceKeypoint.new(0.5, Color3.fromHex("00FF00")),
+        ColorSequenceKeypoint.new(0.66, Color3.fromHex("0000FF")),
+        ColorSequenceKeypoint.new(0.83, Color3.fromHex("4B0082")),
+        ColorSequenceKeypoint.new(1, Color3.fromHex("9400D3"))
+    }),
+    Draggable = true,
+})
+
+Window:Tag({ Title = "91vs78脚本", Color = Color3.fromHex("#30ff6a") })
+Window:Tag({ Title = "91vs78", Color = Color3.fromHex("#315dff") })
+Window:Tag({ Title = "传送脚本", Color = Color3.fromHex("#000000") })
+
+local Tabs = {
+    Main = Window:Section({ Title = "坐标传送", Opened = true }),
+    General = Window:Section({ Title = "通用功能", Opened = false }),
+    ESP = Window:Section({ Title = "人物透视", Opened = false }),
+}
+
+local TabHandles = {
+    Q = Tabs.Main:Tab({ Title = "传送", Icon = "map-pin" }),
+    General = Tabs.General:Tab({ Title = "角色控制", Icon = "settings" }),
+    ESP = Tabs.ESP:Tab({ Title = "透视功能", Icon = "eye" }),
+}
+
+local SavedPosition = nil
+
+TabHandles.Q:Button({
+    Title = "保存当前坐标", Desc = "记录你当前所在的位置", Locked = false,
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            SavedPosition = char.HumanoidRootPart.Position
+            local posStr = string.format("X: %.1f, Y: %.1f, Z: %.1f", SavedPosition.X, SavedPosition.Y, SavedPosition.Z)
+            WindUI:Notify({ Title = "保存成功", Content = "已保存坐标: " .. posStr, Duration = 2, Icon = "save" })
+        else
+            WindUI:Notify({ Title = "错误", Content = "角色未加载，无法保存", Duration = 2, Icon = "alert-triangle" })
+        end
+    end
+})
+
+TabHandles.Q:Button({
+    Title = "传送到保存的坐标", Desc = "回到你上一次保存的位置", Locked = false,
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local char = player.Character
+        if SavedPosition then
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = CFrame.new(SavedPosition)
+                WindUI:Notify({ Title = "传送成功", Content = "已返回保存的坐标!", Duration = 1, Icon = "map-pin" })
+            else
+                WindUI:Notify({ Title = "错误", Content = "角色未加载", Duration = 2, Icon = "alert-triangle" })
+            end
+        else
+            WindUI:Notify({ Title = "提示", Content = "你还没有保存过坐标！", Duration = 2, Icon = "alert-circle" })
+        end
+    end
+})
+
+local infiniteJumpEnabled = false
+TabHandles.General:Toggle({
+    Title = "无限跳跃", Desc = "开启后可以在空中连续跳跃", Default = false,
+    Callback = function(value)
+        infiniteJumpEnabled = value
+        WindUI:Notify({ Title = "功能提示", Content = infiniteJumpEnabled and "无限跳跃已开启!" or "无限跳跃已关闭!", Duration = 1.5, Icon = infiniteJumpEnabled and "arrow-up-circle" or "arrow-down-circle" })
+    end
+})
+
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if infiniteJumpEnabled then
+        local char = game.Players.LocalPlayer.Character
+        if char then local h = char:FindFirstChildOfClass("Humanoid"); if h then h:ChangeState(Enum.HumanoidStateType.Jumping) end end
+
+    end
+end)
+
+TabHandles.General:Button({
+    Title = "重置人物（自杀）", Desc = "立即重置当前角色", Locked = false,
+    Callback = function()
+        local char = game.Players.LocalPlayer.Character
+        if char then local h = char:FindFirstChildOfClass("Humanoid"); if h then h.Health = 0 end end
+    end
+})
+
+local espEnabled = false
+local espBoxes = {}
+
+local function createESP(player)
+    if player == game.Players.LocalPlayer then return end
+    local char = player.Character
+    if not char then return end
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ESP_" .. player.Name
+    billboard.Size = UDim2.new(0, 200, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Adornee = root
+    billboard.Parent = game.CoreGui
+
+    local label = Instance.new("TextLabel")
+    label.Name = "ESPLabel"
+    label.BackgroundTransparency = 1
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 16
+    label.TextColor3 = Color3.fromRGB(0, 255, 0)
+    label.TextStrokeTransparency = 0
+    label.Text = player.Name
+    label.Parent = billboard
+
+    espBoxes[player] = billboard
+end
+
+local function removeESP(player)
+    if espBoxes[player] then
+        espBoxes[player]:Destroy()
+        espBoxes[player] = nil
+    end
+end
+
+local function clearAllESP()
+    for _, gui in pairs(espBoxes) do
+        gui:Destroy()
+    end
+    espBoxes = {}
+end
+
+TabHandles.ESP:Toggle({
+    Title = "人物透视", Desc = "显示所有玩家的名字标签", Default = false,
+    Callback = function(value)
+        espEnabled = value
+        if espEnabled then
+            for _, player in ipairs(game.Players:GetPlayers()) do
+                createESP(player)
+            end
+            WindUI:Notify({ Title = "透视提示", Content = "人物透视已开启!", Duration = 1.5, Icon = "eye" })
+        else
+            clearAllESP()
+            WindUI:Notify({ Title = "透视提示", Content = "人物透视已关闭!", Duration = 1.5, Icon = "eye" })
+        end
+    end
+})
+
+game.Players.PlayerAdded:Connect(function(player)
+    if espEnabled then
+        player.CharacterAdded:Wait()
+        createESP(player)
+    end
+end)
+
+game.Players.PlayerRemoving:Connect(function(player)
+    removeESP(player)
+end)
