@@ -1,0 +1,128 @@
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/whenheet/dasimaui/refs/heads/main/%E4%BB%98%E8%B4%B9%E7%89%88ui(2).lua"))()
+
+local Window = WindUI:CreateWindow({
+    Title = "91vs78脚本",
+    Icon = "rbxassetid://4483362748",
+    IconTransparency = 0.5,
+    IconThemed = true,
+    Author = "作者:是鹤不是轩",
+    Folder = "CloudHub",
+    Size = UDim2.fromOffset(400, 300),
+    Transparent = true,
+    Theme = "Light",
+    User = {
+        Enabled = true,
+        Callback = function() print("clicked") end,
+        Anonymous = false
+    },
+    SideBarWidth = 200,
+    ScrollBarEnabled = true,
+    Background = "rbxassetid://111122821357551"
+})
+
+Window:EditOpenButton({
+    Title = "91vs78脚本",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 16),
+    StrokeThickness = 4,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromHex("FF0000")),
+        ColorSequenceKeypoint.new(0.16, Color3.fromHex("FF7F00")),
+        ColorSequenceKeypoint.new(0.33, Color3.fromHex("FFFF00")),
+        ColorSequenceKeypoint.new(0.5, Color3.fromHex("00FF00")),
+        ColorSequenceKeypoint.new(0.66, Color3.fromHex("0000FF")),
+        ColorSequenceKeypoint.new(0.83, Color3.fromHex("4B0082")),
+        ColorSequenceKeypoint.new(1, Color3.fromHex("9400D3"))
+    }),
+    Draggable = true,
+})
+
+Window:Tag({
+    Title = "91vs78脚本",
+    Color = Color3.fromHex("#30ff6a")
+})
+
+Window:Tag({
+    Title = "91vs78",
+    Color = Color3.fromHex("#315dff")
+})
+
+local TimeTag = Window:Tag({
+    Title = "传送脚本",
+    Color = Color3.fromHex("#000000")
+})
+
+local Tabs = {
+    Main = Window:Section({ Title = "坐标传送", Opened = true }),
+}
+
+local TabHandles = {
+    Q = Tabs.Main:Tab({ Title = "传送", Icon = "map-pin" }),
+}
+
+local SavedPosition = nil
+
+TabHandles.Q:Button({
+    Title = "保存当前坐标",
+    Desc = "记录你当前所在的位置",
+    Locked = false,
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local char = player.Character
+        
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            SavedPosition = char.HumanoidRootPart.Position
+            local posStr = string.format("X: %.1f, Y: %.1f, Z: %.1f", SavedPosition.X, SavedPosition.Y, SavedPosition.Z)
+            
+            WindUI:Notify({
+                Title = "保存成功",
+                Content = "已保存坐标: " .. posStr,
+                Duration = 2,
+                Icon = "save",
+            })
+        else
+            WindUI:Notify({
+                Title = "错误",
+                Content = "角色未加载，无法保存",
+                Duration = 2,
+                Icon = "alert-triangle",
+            })
+        end
+    end
+})
+
+TabHandles.Q:Button({
+    Title = "传送到保存的坐标",
+    Desc = "回到你上一次保存的位置",
+    Locked = false,
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local char = player.Character
+        
+        if SavedPosition then
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = CFrame.new(SavedPosition)
+                WindUI:Notify({
+                    Title = "传送成功",
+                    Content = "已返回保存的坐标!",
+                    Duration = 1,
+                    Icon = "map-pin",
+                })
+            else
+                WindUI:Notify({
+                    Title = "错误",
+                    Content = "角色未加载",
+                    Duration = 2,
+                    Icon = "alert-triangle",
+                })
+            end
+        else
+            WindUI:Notify({
+                Title = "提示",
+                Content = "你还没有保存过坐标！",
+                Duration = 2,
+                Icon = "alert-circle",
+            })
+        end
+    end
+})
