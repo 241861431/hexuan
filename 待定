@@ -1,4 +1,11 @@
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/whenheet/dasimaui/refs/heads/main/%E4%BB%98%E8%B4%B9%E7%89%88ui(2).lua"))()
+-- 加载UI库，增加加载失败容错
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/whenheet/dasimaui/refs/heads/main/%E4%BB%98%E8%B4%B9%E7%89%88ui(2).lua"))()
+end)
+if not success or not WindUI then
+    warn("UI库加载失败！网络问题或链接失效")
+    return
+end
 
 local Window = WindUI:CreateWindow({
     Title = "91vs78脚本<font color='#00FF00'>V2</font>",
@@ -56,7 +63,10 @@ container.BackgroundTransparency = 1
 container.Parent = tabFrame
 
 local player = game.Players.LocalPlayer
+local runService = game:GetService("RunService")
+local savedPoints = {} -- 存储所有坐标点
 
+-- 坐标实时显示标签
 local coordLabel = Instance.new("TextLabel")
 coordLabel.Size = UDim2.new(1, -20, 0, 28)
 coordLabel.Position = UDim2.new(0, 10, 0, 6)
@@ -68,7 +78,8 @@ coordLabel.Font = Enum.Font.Gotham
 coordLabel.TextSize = 14
 coordLabel.Parent = container
 
-game:GetService("RunService").Heartbeat:Connect(function()
+-- 实时更新角色坐标
+runService.Heartbeat:Connect(function()
     local char = player.Character
     if char and char:FindFirstChild("HumanoidRootPart") then
         local pos = char.HumanoidRootPart.Position
@@ -78,6 +89,7 @@ game:GetService("RunService").Heartbeat:Connect(function()
     end
 end)
 
+-- 保存坐标输入框+按钮容器
 local saveFrame = Instance.new("Frame")
 saveFrame.Size = UDim2.new(1, -20, 0, 36)
 saveFrame.Position = UDim2.new(0, 10, 0, 38)
@@ -106,6 +118,7 @@ saveBtn.Font = Enum.Font.GothamBold
 saveBtn.TextSize = 16
 saveBtn.Parent = saveFrame
 
+-- 坐标列表滚动容器
 local listFrame = Instance.new("Frame")
 listFrame.Size = UDim2.new(1, -20, 0, 0.65)
 listFrame.Position = UDim2.new(0, 10, 0, 82)
@@ -129,23 +142,17 @@ listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 listLayout.Padding = UDim.new(0, 5)
 listLayout.Parent = listScroller
 
-local savedPoints = {}
-
+-- 刷新坐标列表函数（核心补充完整逻辑）
 local function refreshList()
+    -- 清空旧条目
     for _, child in ipairs(listScroller:GetChildren()) do
-        if child:IsA("Frame") then child:Destroy() end
+        if child:IsA("Frame") then 
+            child:Destroy() 
+        end
     end
-    for i, data in ipairs(savedPoints) do
+
+    -- 循环生成每个坐标条目
+    for index, data in ipairs(savedPoints) do
         local entry = Instance.new("Frame")
         entry.Size = UDim2.new(1, 0, 0, 36)
-        entry.BackgroundColor3 = Color3.fromRGB(50, 50, 55)
-        entry.BorderSizePixel = 0
-        entry.Parent = listScroller
-
-        local entryCorner = Instance.new("UICorner")
-        entryCorner.CornerRadius = UDim.new(0, 4)
-        entryCorner.Parent = entry
-
-        local nameLabel = Instance.new("TextLabel")
-        nameLabel.Size = UDim2.new(0.35, 0, 1, 0)
-       
+        entry.BackgroundColor3 = Color3.fromRGB(50, 5
